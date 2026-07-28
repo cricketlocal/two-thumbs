@@ -53,7 +53,50 @@
     $$(".screen").forEach((s) => s.classList.remove("active"));
     const el = document.getElementById(id);
     if (el) el.classList.add("active");
-    document.body.classList.toggle("playing", id === "screen-hud");
+
+    // Fullscreen board layout for the whole match session (play / pause / results)
+    const inMatch = ["screen-hud", "screen-pause", "screen-result", "screen-name"].includes(id);
+    const wasPlaying = document.body.classList.contains("playing");
+    document.body.classList.toggle("playing", inMatch);
+
+    if (inMatch) {
+      if (!wasPlaying) requestFullscreenPlay();
+      requestAnimationFrame(() => {
+        if (game) game.resize();
+      });
+    } else {
+      exitFullscreenPlay();
+    }
+  }
+
+  function requestFullscreenPlay() {
+    const root = document.documentElement;
+    const req =
+      root.requestFullscreen ||
+      root.webkitRequestFullscreen ||
+      root.msRequestFullscreen;
+    if (!req) return;
+    // Only attempt when not already fullscreen (user gesture from Begin Duel)
+    if (document.fullscreenElement || document.webkitFullscreenElement) return;
+    try {
+      const p = req.call(root);
+      if (p && typeof p.catch === "function") p.catch(() => {});
+    } catch (_) {
+      /* ignore — CSS fixed fullscreen still applies */
+    }
+  }
+
+  function exitFullscreenPlay() {
+    const exit =
+      document.exitFullscreen ||
+      document.webkitExitFullscreen ||
+      document.msExitFullscreen;
+    if (!exit) return;
+    if (!(document.fullscreenElement || document.webkitFullscreenElement)) return;
+    try {
+      const p = exit.call(document);
+      if (p && typeof p.catch === "function") p.catch(() => {});
+    } catch (_) {}
   }
 
   function toast(msg) {
@@ -219,9 +262,12 @@
     const g = ensureGame();
     const wizard = TT.WIZARDS.find((w) => w.id === state.wizardId);
     const defender = TT.DEFENDERS.find((d) => d.id === state.defenderId);
+    showScreen("screen-hud");
+    // Resize after fullscreen layout so canvas fills the whole screen
     g.resize();
     g.start({ mode: state.mode, wizard, defender });
-    showScreen("screen-hud");
+    setTimeout(() => g.resize(), 80);
+    setTimeout(() => g.resize(), 300);
     startLoop();
   }
 
@@ -298,13 +344,10 @@
   function quitToMenu() {
     if (game) {
       game.stop();
-    }
-    showScreen("screen-title");
-    // keep idle vignette drawing
-    if (game) {
       game.running = false;
-      // draw idle title backdrop via empty-ish state
     }
+    exitFullscreenPlay();
+    showScreen("screen-title");
   }
 
   // —— Idle title canvas art ——
@@ -466,6 +509,13 @@
     window.addEventListener("resize", () => {
       if (game) game.resize();
       else drawIdle();
+    });
+
+    document.addEventListener("fullscreenchange", () => {
+      if (game) setTimeout(() => game.resize(), 50);
+    });
+    document.addEventListener("webkitfullscreenchange", () => {
+      if (game) setTimeout(() => game.resize(), 50);
     });
 
     window.addEventListener("orientationchange", () => {

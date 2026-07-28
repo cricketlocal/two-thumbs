@@ -93,24 +93,25 @@
         <button type="button" class="btn btn-ghost" data-action="back-wizard">Back</button>
       </section>
 
-      <!-- HUD (shown during play) -->
+      <!-- HUD — edge chrome only; board is fullscreen -->
       <section id="screen-hud" class="screen hud">
-        <div class="hud-top">
-          <div class="hud-pill" id="hud-round">R1</div>
-          <div class="hud-pill" id="hud-score">0 — 0</div>
-          <div class="hud-pill" id="hud-combo">×1</div>
+        <div class="hud-edge hud-edge-tl">
+          <span class="hud-chip" id="hud-round">R1</span>
+          <span class="hud-chip" id="hud-score">0—0</span>
+          <span class="hud-chip hud-chip-combo" id="hud-combo">×1</span>
         </div>
-        <div class="hud-timer" id="hud-timer" aria-live="polite">2:00</div>
-        <div class="hud-mid">
-          <div class="wall-bar-wrap">
-            <span class="wall-label">CASTLE</span>
+        <div class="hud-edge hud-edge-tr">
+          <span class="hud-timer" id="hud-timer" aria-live="polite">2:00</span>
+          <button type="button" class="btn-pause" data-action="pause" aria-label="Pause">❚❚</button>
+        </div>
+        <div class="hud-edge hud-edge-bl">
+          <div class="wall-bar-wrap" title="Castle wall">
             <div class="wall-bar"><div id="wall-fill" class="wall-fill"></div></div>
             <span id="wall-hp" class="wall-hp">100</span>
           </div>
         </div>
         <div class="hud-banner" id="hud-banner" hidden></div>
         <div class="hud-hint" id="hud-hint"></div>
-        <button type="button" class="btn-pause" data-action="pause" aria-label="Pause">❚❚</button>
       </section>
 
       <!-- PAUSE -->

@@ -45,6 +45,34 @@ html, body {
   background: radial-gradient(120% 80% at 50% 0%, #1a0f3a 0%, var(--bg) 55%, #05030c 100%);
 }
 
+/* True fullscreen board when a match is running */
+body.playing {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #05030c;
+}
+
+body.playing #app {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  margin: 0;
+  border-radius: 0;
+  box-shadow: none;
+  top: auto;
+  transform: none;
+  z-index: 50;
+}
+
+body.playing #bg-stars,
+body.playing #bg-glow {
+  opacity: 0.2;
+}
+
 #bg-stars, #bg-glow {
   position: absolute;
   inset: 0;
@@ -115,6 +143,8 @@ html, body {
   justify-content: flex-start;
   pointer-events: none;
   overflow: visible;
+  padding: 0;
+  gap: 0;
 }
 
 .screen.hud .btn-pause { pointer-events: auto; }
@@ -226,43 +256,85 @@ html, body {
   color: var(--ink);
 }
 
-.btn-pause {
+/* Edge-only HUD chrome — keeps board max size */
+.hud-edge {
   position: absolute;
-  top: calc(12px + var(--safe-t));
-  right: 12px;
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,.15);
-  background: rgba(10,6,24,.65);
-  color: var(--ink);
-  font-size: .85rem;
-  cursor: pointer;
-  backdrop-filter: blur(8px);
   z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  pointer-events: none;
 }
 
-/* Round countdown — top right (left of pause) */
+.hud-edge-tl {
+  top: calc(4px + var(--safe-t));
+  left: 6px;
+}
+
+.hud-edge-tr {
+  top: calc(4px + var(--safe-t));
+  right: 6px;
+  pointer-events: auto;
+}
+
+.hud-edge-bl {
+  bottom: calc(4px + var(--safe-b));
+  left: 6px;
+  right: auto;
+  max-width: 42%;
+}
+
+.hud-chip {
+  background: rgba(8, 4, 18, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  padding: 3px 7px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  backdrop-filter: blur(6px);
+  color: rgba(244, 236, 255, 0.9);
+  white-space: nowrap;
+}
+
+.hud-chip-combo {
+  color: var(--gold);
+  min-width: 1.8em;
+  text-align: center;
+}
+
+.btn-pause {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(10, 6, 24, 0.55);
+  color: var(--ink);
+  font-size: 0.58rem;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  flex-shrink: 0;
+  padding: 0;
+  line-height: 1;
+}
+
+/* Round countdown — top right edge */
 .hud-timer {
-  position: absolute;
-  top: calc(14px + var(--safe-t));
-  right: 62px;
-  min-width: 64px;
-  padding: 8px 12px;
-  border-radius: 12px;
-  background: rgba(10, 6, 24, 0.78);
-  border: 1px solid rgba(255, 213, 106, 0.45);
+  min-width: 42px;
+  padding: 4px 7px;
+  border-radius: 8px;
+  background: rgba(10, 6, 24, 0.6);
+  border: 1px solid rgba(255, 213, 106, 0.4);
   color: var(--gold);
   font-family: "Cinzel", serif;
-  font-size: 1.05rem;
+  font-size: 0.78rem;
   font-weight: 800;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
   text-align: center;
   line-height: 1;
   pointer-events: none;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
-  z-index: 3;
+  backdrop-filter: blur(6px);
   font-variant-numeric: tabular-nums;
 }
 
@@ -413,61 +485,26 @@ html, body {
 
 .t-card strong { color: var(--gold); }
 
-/* HUD */
-.hud-top {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  padding-top: 4px;
-  pointer-events: none;
-}
-
-.hud-pill {
-  background: rgba(10,6,24,.72);
-  border: 1px solid rgba(255,255,255,.12);
-  border-radius: 999px;
-  padding: 6px 12px;
-  font-size: .78rem;
-  font-weight: 700;
-  backdrop-filter: blur(6px);
-  min-width: 52px;
-  text-align: center;
-}
-
-.hud-mid {
-  width: 100%;
-  margin-top: 8px;
-  display: flex;
-  justify-content: center;
-  pointer-events: none;
-}
-
+/* Thin edge wall HP — no floating mid-board chrome */
 .wall-bar-wrap {
   display: flex;
   align-items: center;
-  gap: 8px;
-  background: rgba(10,6,24,.65);
-  border: 1px solid rgba(255,255,255,.1);
+  gap: 5px;
+  background: rgba(8, 4, 18, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 999px;
-  padding: 6px 12px;
+  padding: 3px 7px 3px 6px;
   backdrop-filter: blur(6px);
-  width: min(280px, 78%);
-}
-
-.wall-label {
-  font-size: .62rem;
-  font-weight: 800;
-  letter-spacing: .12em;
-  color: var(--gold);
+  width: min(140px, 38vw);
 }
 
 .wall-bar {
   flex: 1;
-  height: 8px;
+  height: 4px;
   border-radius: 999px;
-  background: rgba(255,255,255,.1);
+  background: rgba(255, 255, 255, 0.1);
   overflow: hidden;
+  min-width: 48px;
 }
 
 .wall-fill {
@@ -480,10 +517,12 @@ html, body {
 }
 
 .wall-hp {
-  font-size: .72rem;
+  font-size: 0.58rem;
   font-weight: 800;
-  min-width: 28px;
+  min-width: 18px;
   text-align: right;
+  color: rgba(244, 236, 255, 0.85);
+  font-variant-numeric: tabular-nums;
 }
 
 .hud-banner {
@@ -492,7 +531,7 @@ html, body {
   left: 50%;
   transform: translate(-50%, -50%);
   font-family: "Cinzel", serif;
-  font-size: clamp(1.4rem, 7vw, 2rem);
+  font-size: clamp(1.2rem, 6vw, 1.7rem);
   font-weight: 800;
   color: var(--gold);
   text-shadow: 0 0 24px rgba(255,213,106,.6), 0 4px 0 rgba(0,0,0,.5);
@@ -504,16 +543,17 @@ html, body {
 
 .hud-hint {
   position: absolute;
-  bottom: calc(18% + var(--safe-b));
+  top: calc(36px + var(--safe-t));
   left: 50%;
   transform: translateX(-50%);
-  font-size: .78rem;
+  font-size: 0.62rem;
   font-weight: 600;
-  color: rgba(244,236,255,.75);
+  color: rgba(244, 236, 255, 0.55);
   text-align: center;
   pointer-events: none;
-  text-shadow: 0 2px 8px rgba(0,0,0,.8);
-  max-width: 90%;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.85);
+  max-width: 70%;
+  opacity: 0.85;
 }
 
 @keyframes banner-pop {
@@ -652,21 +692,19 @@ html, body {
   to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
 }
 
-/* Playing: hide menu chrome feel */
-body.playing #bg-stars { opacity: .35; }
-
+/* Menus only: phone-frame on large screens. Match = true fullscreen above. */
 @media (min-width: 480px) {
-  #app {
+  body:not(.playing) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #030208;
+  }
+  body:not(.playing) #app {
     box-shadow: 0 0 0 1px rgba(255,255,255,.06), 0 24px 80px rgba(0,0,0,.55);
     border-radius: 24px;
     height: min(100%, 900px);
     top: 50%;
     transform: translateY(-50%);
-  }
-  body {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #030208;
   }
 }

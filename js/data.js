@@ -225,11 +225,12 @@
     SHRINK: 0.1,
     ROUND_TIME: 120, // seconds per round (duel)
     BEST_OF: 3,
-    CASTLE_Y_RATIO: 0.92,
-    PADDLE_Y_RATIO: 0.84,
-    WIZARD_ZONE: 0.18,
-    FIELD_TOP: 0.2,
-    FIELD_BOT: 0.82,
+    // Max board: thin wizard strip top, thin castle strip bottom
+    CASTLE_Y_RATIO: 0.965,
+    PADDLE_Y_RATIO: 0.91,
+    WIZARD_ZONE: 0.09,
+    FIELD_TOP: 0.09,
+    FIELD_BOT: 0.90,
     POWERUP_CHANCE: 0.18,
     POWERUP_INTERVAL: 7,
     ENDLESS_SPAWN_SCALE: 0.012,

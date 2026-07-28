@@ -966,11 +966,7 @@
       ctx.stroke();
       ctx.setLineDash([]);
 
-      // Zone labels
-      ctx.font = "700 10px Outfit, sans-serif";
-      ctx.fillStyle = "rgba(255,255,255,0.2)";
-      ctx.textAlign = "center";
-      ctx.fillText("SPELLFIELD · REBOUNDS", w / 2, top + 16);
+      // No mid-field labels — maximize clean play space
     }
 
     _drawWizardZone(ctx, w, h) {
@@ -978,70 +974,49 @@
       const wiz = this.wizard;
       if (!wiz) return;
 
-      const grad = ctx.createRadialGradient(w / 2, zh * 0.55, 10, w / 2, zh * 0.55, w * 0.45);
-      grad.addColorStop(0, wiz.color + "55");
+      // Compact top strip — tiny caster icon, max board below
+      const grad = ctx.createRadialGradient(w / 2, zh * 0.5, 4, w / 2, zh * 0.5, w * 0.35);
+      grad.addColorStop(0, wiz.color + "44");
       grad.addColorStop(1, "transparent");
       ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, w, zh + 20);
+      ctx.fillRect(0, 0, w, zh + 6);
 
-      // Wizard figure
       const cx = w / 2;
-      const cy = zh * 0.48;
+      const cy = Math.max(18, zh * 0.42);
+      const s = Math.min(0.55, zh / 90);
       ctx.save();
       ctx.translate(cx, cy);
-      // Aura
+      ctx.scale(s, s);
       ctx.beginPath();
-      ctx.arc(0, 0, 36 + Math.sin(this.time * 3) * 3, 0, Math.PI * 2);
+      ctx.arc(0, 0, 28 + Math.sin(this.time * 3) * 2, 0, Math.PI * 2);
       ctx.fillStyle = wiz.color + "33";
       ctx.fill();
-      // Body cloak
       ctx.fillStyle = wiz.color;
       ctx.beginPath();
-      ctx.moveTo(0, -22);
-      ctx.quadraticCurveTo(28, 10, 18, 34);
-      ctx.lineTo(-18, 34);
-      ctx.quadraticCurveTo(-28, 10, 0, -22);
+      ctx.moveTo(0, -18);
+      ctx.quadraticCurveTo(22, 8, 14, 28);
+      ctx.lineTo(-14, 28);
+      ctx.quadraticCurveTo(-22, 8, 0, -18);
       ctx.fill();
       ctx.fillStyle = wiz.color2;
       ctx.beginPath();
-      ctx.arc(0, -18, 14, 0, Math.PI * 2);
+      ctx.arc(0, -14, 11, 0, Math.PI * 2);
       ctx.fill();
-      // Hat
       ctx.fillStyle = wiz.color;
       ctx.beginPath();
-      ctx.moveTo(-16, -22);
-      ctx.lineTo(0, -48);
-      ctx.lineTo(16, -22);
+      ctx.moveTo(-12, -18);
+      ctx.lineTo(0, -38);
+      ctx.lineTo(12, -18);
       ctx.closePath();
-      ctx.fill();
-      ctx.fillStyle = wiz.color2;
-      ctx.fillRect(-18, -24, 36, 5);
-      // Staff
-      ctx.strokeStyle = "#e8d5a8";
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(22, 8);
-      ctx.lineTo(34, -20);
-      ctx.stroke();
-      ctx.fillStyle = wiz.color2;
-      ctx.shadowColor = wiz.color;
-      ctx.shadowBlur = 16;
-      ctx.beginPath();
-      ctx.arc(34, -24, 6, 0, Math.PI * 2);
       ctx.fill();
       ctx.restore();
 
-      ctx.font = "800 13px Cinzel, serif";
+      ctx.font = "700 9px Outfit, sans-serif";
       ctx.fillStyle = wiz.color2;
       ctx.textAlign = "center";
-      ctx.shadowColor = wiz.color;
-      ctx.shadowBlur = 10;
-      ctx.fillText(wiz.name.toUpperCase(), w / 2, zh * 0.92);
-      ctx.shadowBlur = 0;
-
-      ctx.font = "600 10px Outfit, sans-serif";
-      ctx.fillStyle = "rgba(255,255,255,0.45)";
-      ctx.fillText(this.cd > 0 ? "…" : "FLICK TO CAST", w / 2, zh * 0.92 + 14);
+      ctx.globalAlpha = 0.85;
+      ctx.fillText(this.cd > 0 ? "…" : "FLICK", w / 2, zh - 2);
+      ctx.globalAlpha = 1;
     }
 
     _drawSpell(ctx, s) {
@@ -1126,12 +1101,11 @@
       ctx.textBaseline = "middle";
       ctx.fillText(def.emoji, x, y);
 
-      // Scale ticks
-      ctx.fillStyle = "rgba(255,255,255,0.35)";
-      ctx.font = "700 9px Outfit, sans-serif";
-      ctx.fillText(`${Math.round(this.paddleScale * 100)}%`, x, y + ph + 10);
+      // Tiny scale mark under paddle (edge of play, not a big label)
+      ctx.fillStyle = "rgba(255,255,255,0.3)";
+      ctx.font = "700 8px Outfit, sans-serif";
+      ctx.fillText(`${Math.round(this.paddleScale * 100)}%`, x, y + ph + 8);
 
-      // Slow tint
       if (this.effects.slowPaddle > 0) {
         ctx.fillStyle = "rgba(110,203,255,0.25)";
         ctx.beginPath();
@@ -1145,51 +1119,38 @@
       const y = h * global.TT.CFG.CASTLE_Y_RATIO;
       const hp = this.wallHp / global.TT.CFG.WALL_MAX;
 
-      // Wall body
-      const wallH = h - y + 8;
+      // Thin bottom wall strip — keep board tall
+      const wallH = h - y + 4;
       const g = ctx.createLinearGradient(0, y, 0, h);
-      g.addColorStop(0, `rgba(90,70,100,${0.5 + hp * 0.4})`);
+      g.addColorStop(0, `rgba(90,70,100,${0.55 + hp * 0.35})`);
       g.addColorStop(1, "#1a1020");
       ctx.fillStyle = g;
       ctx.fillRect(0, y, w, wallH);
 
-      // Battlements
       ctx.fillStyle = hp > 0.3 ? "#6a5a70" : "#5a3040";
-      const bw = 22;
-      for (let x = 8; x < w; x += bw + 8) {
-        ctx.fillRect(x, y - 10, bw, 12);
+      const bw = 18;
+      for (let x = 6; x < w; x += bw + 6) {
+        ctx.fillRect(x, y - 6, bw, 7);
       }
 
-      // Cracks when damaged
       if (hp < 0.7) {
         ctx.strokeStyle = `rgba(20,10,20,${0.5 + (1 - hp) * 0.4})`;
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 1.5;
         ctx.beginPath();
-        ctx.moveTo(w * 0.3, y + 5);
-        ctx.lineTo(w * 0.35, y + 25);
-        ctx.lineTo(w * 0.28, y + 40);
+        ctx.moveTo(w * 0.3, y + 2);
+        ctx.lineTo(w * 0.34, y + 10);
         if (hp < 0.4) {
-          ctx.moveTo(w * 0.65, y + 8);
-          ctx.lineTo(w * 0.7, y + 35);
+          ctx.moveTo(w * 0.65, y + 3);
+          ctx.lineTo(w * 0.7, y + 12);
         }
         ctx.stroke();
       }
 
-      // Gate
-      ctx.fillStyle = "#2a1828";
-      ctx.beginPath();
-      ctx.moveTo(w / 2 - 28, h);
-      ctx.lineTo(w / 2 - 28, y + 18);
-      ctx.quadraticCurveTo(w / 2, y + 4, w / 2 + 28, y + 18);
-      ctx.lineTo(w / 2 + 28, h);
-      ctx.fill();
-
-      // Defender name
       if (this.defender) {
-        ctx.font = "700 11px Outfit, sans-serif";
-        ctx.fillStyle = "rgba(255,213,106,0.7)";
-        ctx.textAlign = "center";
-        ctx.fillText(`${this.defender.emoji} ${this.defender.name}`, w / 2, h - 12);
+        ctx.font = "700 9px Outfit, sans-serif";
+        ctx.fillStyle = "rgba(255,213,106,0.55)";
+        ctx.textAlign = "right";
+        ctx.fillText(this.defender.emoji, w - 10, h - 6);
       }
     }
 
@@ -1267,20 +1228,23 @@
       if (this.defender && this.defender.special === "breath" && this.effects.breathCd <= 0) {
         chips.push({ t: "🐉 ready", c: "#ff6b3d" });
       }
-      let x = 16;
-      const y = h * global.TT.CFG.FIELD_BOT + 8;
-      ctx.font = "700 11px Outfit, sans-serif";
-      for (const c of chips) {
-        ctx.fillStyle = "rgba(0,0,0,0.45)";
-        const tw = ctx.measureText(c.t).width + 14;
+      // Bottom-right edge chips — keep playfield clear
+      let x = w - 10;
+      const y = h - 18;
+      ctx.font = "700 9px Outfit, sans-serif";
+      ctx.textAlign = "right";
+      ctx.textBaseline = "middle";
+      for (let i = chips.length - 1; i >= 0; i--) {
+        const c = chips[i];
+        const tw = ctx.measureText(c.t).width + 10;
+        x -= tw;
+        ctx.fillStyle = "rgba(0,0,0,0.4)";
         ctx.beginPath();
-        ctx.roundRect(x, y, tw, 20, 10);
+        ctx.roundRect(x, y - 8, tw, 16, 8);
         ctx.fill();
         ctx.fillStyle = c.c;
-        ctx.textAlign = "left";
-        ctx.textBaseline = "middle";
-        ctx.fillText(c.t, x + 7, y + 11);
-        x += tw + 6;
+        ctx.fillText(c.t, x + tw - 5, y);
+        x -= 4;
       }
     }
   }
