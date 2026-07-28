@@ -10,7 +10,9 @@ Top player swipes to launch air-hockey spells. Bottom player drags a paddle-shie
 
 ## Play now
 
-Open `index.html` in a mobile browser (or desktop Chrome/Edge/Firefox).
+**Live:** [cricketlocal.github.io/two-thumbs](https://cricketlocal.github.io/two-thumbs/)
+
+Or open `index.html` locally in a mobile browser (or desktop Chrome/Edge/Firefox).
 
 ```bash
 # optional local server (recommended)
