@@ -223,7 +223,7 @@
     PADDLE_MAX_SCALE: 2.2,
     GROW: 0.1,
     SHRINK: 0.1,
-    ROUND_TIME: 45, // seconds per round (duel)
+    ROUND_TIME: 120, // seconds per round (duel)
     BEST_OF: 3,
     CASTLE_Y_RATIO: 0.92,
     PADDLE_Y_RATIO: 0.84,

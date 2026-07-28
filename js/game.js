@@ -409,6 +409,7 @@
           endlessWave: this.endlessWave,
           attackerIsA: this.attackerIsA,
           timeLeft: Math.max(0, this.roundTime - this.time),
+          timeElapsed: this.time,
           hint: this._hintText(),
         });
       }

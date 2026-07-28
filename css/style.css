@@ -239,6 +239,48 @@ html, body {
   font-size: .85rem;
   cursor: pointer;
   backdrop-filter: blur(8px);
+  z-index: 3;
+}
+
+/* Round countdown — top right (left of pause) */
+.hud-timer {
+  position: absolute;
+  top: calc(14px + var(--safe-t));
+  right: 62px;
+  min-width: 64px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: rgba(10, 6, 24, 0.78);
+  border: 1px solid rgba(255, 213, 106, 0.45);
+  color: var(--gold);
+  font-family: "Cinzel", serif;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-align: center;
+  line-height: 1;
+  pointer-events: none;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+  z-index: 3;
+  font-variant-numeric: tabular-nums;
+}
+
+.hud-timer.warn {
+  color: #ffb347;
+  border-color: rgba(255, 107, 61, 0.55);
+  animation: timer-pulse 0.9s ease-in-out infinite;
+}
+
+.hud-timer.danger {
+  color: #ff3d6e;
+  border-color: rgba(255, 61, 110, 0.7);
+  animation: timer-pulse 0.5s ease-in-out infinite;
+}
+
+@keyframes timer-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.04); opacity: 0.92; }
 }
 
 /* Screens */

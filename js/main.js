@@ -84,6 +84,13 @@
     }, (t || 1.2) * 1000);
   }
 
+  function formatTime(sec) {
+    const s = Math.max(0, Math.ceil(sec));
+    const m = Math.floor(s / 60);
+    const r = s % 60;
+    return `${m}:${r.toString().padStart(2, "0")}`;
+  }
+
   function updateHud(h) {
     if (h.mode === "endless") {
       $("#hud-round").textContent = `W${h.endlessWave}`;
@@ -97,6 +104,20 @@
     $("#wall-fill").style.width = `${pct}%`;
     $("#wall-hp").textContent = String(h.wallHp);
     $("#hud-hint").textContent = h.hint || "";
+
+    // Top-right countdown (duel: remaining; endless: elapsed)
+    const timerEl = $("#hud-timer");
+    if (timerEl) {
+      if (h.mode === "endless") {
+        timerEl.textContent = formatTime(h.timeElapsed || 0);
+        timerEl.classList.remove("warn", "danger");
+      } else {
+        const left = h.timeLeft != null ? h.timeLeft : 120;
+        timerEl.textContent = formatTime(left);
+        timerEl.classList.toggle("warn", left <= 30 && left > 10);
+        timerEl.classList.toggle("danger", left <= 10);
+      }
+    }
   }
 
   // —— Character grids ——
