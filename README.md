@@ -71,7 +71,7 @@ Triple Cast · Giant Shield · Time Freeze · Stone Mend · Haste Sigil · Magne
 
 | Zone | Action |
 |------|--------|
-| **Top third** | Swipe to cast (speed = power) |
+| **Top third** | Flick-swipe to cast (no aim line; speed = power) |
 | **Bottom third** | Drag paddle-shield |
 | **Dragon** | Double-tap bottom zone = fire breath |
 | **Pause** | HUD button / `Esc` |

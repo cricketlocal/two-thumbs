@@ -136,7 +136,7 @@
       this.combo = 0;
       this.time = 0;
       this.roundTime = CFG.ROUND_TIME;
-      this.cd = 0.4;
+      this.cd = 0.15;
       this.powerupTimer = CFG.POWERUP_INTERVAL * 0.5;
       this.shake = 0;
       this.slowMo = 0;
@@ -203,7 +203,17 @@
       const zone = this._zone(p.y);
 
       if (zone === "wizard" || (zone === "field" && p.y < this.h * 0.45)) {
-        this.swipe = { id: p.id, x0: p.x, y0: p.y, x: p.x, y: p.y, t0: performance.now() };
+        // Flick-swipe: sample velocity only — never draw an aim path
+        const now = performance.now();
+        this.swipe = {
+          id: p.id,
+          x0: p.x,
+          y0: p.y,
+          x: p.x,
+          y: p.y,
+          t0: now,
+          samples: [{ x: p.x, y: p.y, t: now }],
+        };
         try { this.canvas.setPointerCapture(p.id); } catch (_) {}
       } else {
         this.pointer = { active: true, id: p.id, x: p.x, y: p.y, zone: "defender" };
@@ -224,8 +234,15 @@
       if (!this.running || this.paused) return;
       const p = this._local(e);
       if (this.swipe && this.swipe.id === p.id) {
+        const now = performance.now();
         this.swipe.x = p.x;
         this.swipe.y = p.y;
+        this.swipe.samples.push({ x: p.x, y: p.y, t: now });
+        // Keep a short window for flick velocity (no long drag-line aim)
+        const cutoff = now - 90;
+        while (this.swipe.samples.length > 2 && this.swipe.samples[0].t < cutoff) {
+          this.swipe.samples.shift();
+        }
       }
       if (this.pointer.active && this.pointer.id === p.id) {
         this.pointer.x = p.x;
@@ -247,49 +264,76 @@
 
     _tryLaunch(swipe) {
       if (this.cd > 0 || this.effects.freeze > 0) return;
-      const dx = swipe.x - swipe.x0;
-      const dy = swipe.y - swipe.y0;
-      const dt = Math.max(16, performance.now() - swipe.t0);
-      const len = Math.hypot(dx, dy);
-      if (len < 18) return;
 
-      // Prefer downward / toward field; invert if player swipes up from top
-      let vx = dx / (dt / 1000);
-      let vy = dy / (dt / 1000);
-      // Normalize toward field (positive y = down)
-      if (vy < 40) vy = Math.abs(vy) + 80;
+      // Flick velocity from recent samples (last ~90ms) — not a drawn aim line
+      const samples = swipe.samples && swipe.samples.length >= 2
+        ? swipe.samples
+        : [
+            { x: swipe.x0, y: swipe.y0, t: swipe.t0 },
+            { x: swipe.x, y: swipe.y, t: performance.now() },
+          ];
+      const a = samples[0];
+      const b = samples[samples.length - 1];
+      const dtMs = Math.max(12, b.t - a.t);
+      let dx = b.x - a.x;
+      let dy = b.y - a.y;
+      const flickLen = Math.hypot(dx, dy);
+      // Full-gesture length as fallback for slow drags that still flick at the end
+      const fullLen = Math.hypot(swipe.x - swipe.x0, swipe.y - swipe.y0);
+      if (flickLen < 10 && fullLen < 22) return;
+
+      if (flickLen < 10) {
+        dx = swipe.x - swipe.x0;
+        dy = swipe.y - swipe.y0;
+      }
+
+      let vx = (dx / dtMs) * 1000;
+      let vy = (dy / dtMs) * 1000;
+      // Spells always fire into the field (down). Up-swipes invert into a forward flick.
+      if (vy < 60) vy = Math.abs(vy) + 120;
       const speed = Math.hypot(vx, vy);
-      const power = clamp(speed / 900, 0.45, 1.65);
+      // Faster cast cadence: easier to hit power band on short flicks
+      const power = clamp(speed / 700, 0.55, 1.75);
       const ang = Math.atan2(vy, vx);
-      // Limit extreme side angles
       const maxSide = Math.PI * 0.42;
       const mid = Math.PI / 2;
       const clamped = mid + clamp(ang - mid, -maxSide, maxSide);
+
+      // Launch from wizard, not from finger path — hides aim origin from defender
+      const spawnX = this.w / 2 + clamp((swipe.x0 - this.w / 2) * 0.35, -this.w * 0.22, this.w * 0.22);
+      const spawnY = this.h * global.TT.CFG.WIZARD_ZONE * 0.85;
 
       const count = 1 + (this.effects.multiShots > 0 ? 2 : 0);
       if (this.effects.multiShots > 0) this.effects.multiShots--;
 
       for (let i = 0; i < count; i++) {
         const spread = count > 1 ? (i - 1) * 0.18 : 0;
-        this._spawnSpell(swipe.x0, this.h * global.TT.CFG.WIZARD_ZONE * 0.85, clamped + spread, power, false);
+        this._spawnSpell(spawnX, spawnY, clamped + spread, power, false);
       }
 
       // Shade decoy
       if (this.wizard.special === "decoy") {
-        this._spawnSpell(swipe.x0 + (Math.random() > 0.5 ? 30 : -30), this.h * global.TT.CFG.WIZARD_ZONE * 0.85, clamped + (Math.random() - 0.5) * 0.5, power * 0.9, true);
+        this._spawnSpell(
+          spawnX + (Math.random() > 0.5 ? 28 : -28),
+          spawnY,
+          clamped + (Math.random() - 0.5) * 0.5,
+          power * 0.9,
+          true
+        );
       }
 
-      const haste = this.effects.haste > 0 ? 0.55 : 1;
+      const haste = this.effects.haste > 0 ? 0.5 : 1;
       this.cd = this.wizard.cooldown * haste;
       global.TT.SFX.swipe();
       global.TT.SFX.launch();
-      this.particles.burst(swipe.x0, this.h * global.TT.CFG.WIZARD_ZONE * 0.85, this.wizard.color, 10, 120, 0.35, 3);
+      // Cast flash at wizard only — no direction telegraph
+      this.particles.burst(spawnX, spawnY, this.wizard.color, 12, 140, 0.3, 3);
       if (this.hintsLeft > 0) this.hintsLeft--;
     }
 
     _spawnSpell(x, y, angle, power, decoy) {
       const wiz = this.wizard;
-      const base = 220 * wiz.speed * power * (this.mode === "endless" ? 1 + this.endlessWave * 0.03 : 1);
+      const base = 280 * wiz.speed * power * (this.mode === "endless" ? 1 + this.endlessWave * 0.03 : 1);
       const spell = {
         x,
         y,
@@ -372,10 +416,10 @@
 
     _hintText() {
       if (this.hintsLeft <= 0) return "";
-      if (this.mode === "endless") return "Swipe spells from the top · Drag shield at the bottom";
+      if (this.mode === "endless") return "Flick to cast (no aim line) · Drag shield below";
       return this.attackerIsA
-        ? "P1 attack (top swipe) · P2 defend (bottom drag)"
-        : "P2 attack (top swipe) · P1 defend (bottom drag)";
+        ? "P1 flick-cast (top) · P2 defend (bottom) — no path preview"
+        : "P2 flick-cast (top) · P1 defend (bottom) — no path preview";
     }
 
     update(dt) {
@@ -856,8 +900,7 @@
       // Spells
       for (const s of this.spells) this._drawSpell(ctx, s);
 
-      // Swipe aim line
-      if (this.swipe) this._drawSwipe(ctx, this.swipe);
+      // No aim-line preview — defender must react to the spell, not a drawn path
 
       // Paddle
       this._drawPaddle(ctx, w, h);
@@ -997,7 +1040,7 @@
 
       ctx.font = "600 10px Outfit, sans-serif";
       ctx.fillStyle = "rgba(255,255,255,0.45)";
-      ctx.fillText("SWIPE TO CAST", w / 2, zh * 0.92 + 14);
+      ctx.fillText(this.cd > 0 ? "…" : "FLICK TO CAST", w / 2, zh * 0.92 + 14);
     }
 
     _drawSpell(ctx, s) {
@@ -1050,32 +1093,6 @@
         ctx.arc(0, 0, s.r + 3, 0, Math.PI * 2);
         ctx.stroke();
       }
-      ctx.restore();
-    }
-
-    _drawSwipe(ctx, swipe) {
-      ctx.save();
-      ctx.strokeStyle = "rgba(255,213,106,0.7)";
-      ctx.lineWidth = 3;
-      ctx.setLineDash([6, 6]);
-      ctx.lineCap = "round";
-      ctx.beginPath();
-      ctx.moveTo(swipe.x0, swipe.y0);
-      ctx.lineTo(swipe.x, swipe.y);
-      ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.fillStyle = "rgba(255,213,106,0.9)";
-      ctx.beginPath();
-      ctx.arc(swipe.x, swipe.y, 6, 0, Math.PI * 2);
-      ctx.fill();
-      // Power ring
-      const len = Math.hypot(swipe.x - swipe.x0, swipe.y - swipe.y0);
-      const power = clamp(len / 120, 0, 1);
-      ctx.strokeStyle = `rgba(255,107,61,${0.4 + power * 0.5})`;
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.arc(swipe.x0, swipe.y0, 12 + power * 20, 0, Math.PI * 2);
-      ctx.stroke();
       ctx.restore();
     }
 
