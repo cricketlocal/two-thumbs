@@ -1,0 +1,25 @@
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors / IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs & local
+*.log
+.env
+.env.*
+
+# Node (if serving tools leave crumbs)
+node_modules/
+.cache/
+
+# Local server / build
+dist/
+.firebase/
+.vercel/

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#0a0618" />
+  <meta name="description" content="Two Thumbs — vertical wizard duel. Swipe spells. Guard the castle. Swap roles. Go viral." />
+  <meta name="apple-mobile-web-app-title" content="Two Thumbs" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="assets/icon-512.png" />
+  <title>Two Thumbs — Wizard Duel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪄</text></svg>" />
+</head>
+<body>
+  <div id="app">
+    <!-- Ambient backdrop -->
+    <div id="bg-stars" aria-hidden="true"></div>
+    <div id="bg-glow" aria-hidden="true"></div>
+
+    <!-- Main canvas (gameplay + procedural art) -->
+    <canvas id="game" width="390" height="844"></canvas>
+
+    <!-- DOM overlays for menus (crisp text / accessibility) -->
+    <div id="ui" class="ui">
+      <!-- TITLE -->
+      <section id="screen-title" class="screen active">
+        <div class="title-stack">
+          <p class="eyebrow">PASS · PLAY · DUEL</p>
+          <h1 class="logo">
+            <span class="logo-two">TWO</span>
+            <span class="logo-thumbs">THUMBS</span>
+          </h1>
+          <p class="tagline">Wizard vs Castle. One phone. Zero mercy.</p>
+        </div>
+        <div class="btn-col">
+          <button type="button" class="btn btn-primary" data-action="play">⚔️ Duel Mode</button>
+          <button type="button" class="btn btn-accent" data-action="endless">∞ Endless Siege</button>
+          <button type="button" class="btn btn-ghost" data-action="tutorial">📖 How to Play</button>
+          <button type="button" class="btn btn-ghost" data-action="leaderboard">🏆 Leaderboards</button>
+        </div>
+        <p class="footer-note">MIT · Touch-optimised · Best on phone, fun on desktop</p>
+      </section>
+
+      <!-- TUTORIAL -->
+      <section id="screen-tutorial" class="screen">
+        <h2 class="screen-title">How to Play</h2>
+        <div class="tutorial-cards">
+          <article class="t-card">
+            <div class="t-icon">👆</div>
+            <h3>Top thumb — Wizard</h3>
+            <p>Swipe to launch spells. Faster swipe = more power. Spells rebound off the side walls like air hockey.</p>
+          </article>
+          <article class="t-card">
+            <div class="t-icon">🛡️</div>
+            <h3>Bottom thumb — Defender</h3>
+            <p>Drag your paddle-shield. Block and it grows <strong>+10%</strong>. Miss and it shrinks <strong>−10%</strong> while the castle wall takes damage.</p>
+          </article>
+          <article class="t-card">
+            <div class="t-icon">🔄</div>
+            <h3>Role swap</h3>
+            <p>After each round, attackers become defenders. Best of 3 — or Endless until the wall falls.</p>
+          </article>
+          <article class="t-card">
+            <div class="t-icon">✨</div>
+            <h3>Power-ups</h3>
+            <p>Grab glowing orbs mid-field for multi-shot, freeze, repair, giant shield, and more.</p>
+          </article>
+        </div>
+        <button type="button" class="btn btn-primary" data-action="back-title">Got it</button>
+      </section>
+
+      <!-- MODE: pick who picks first is automatic; wizard select -->
+      <section id="screen-wizard" class="screen">
+        <h2 class="screen-title" id="wizard-title">Pick your Wizard</h2>
+        <p class="screen-sub" id="wizard-sub">Top player — choose your school of magic</p>
+        <div id="wizard-grid" class="char-grid"></div>
+        <button type="button" class="btn btn-primary" id="btn-wizard-next" disabled data-action="wizard-confirm">Continue</button>
+        <button type="button" class="btn btn-ghost" data-action="back-title">Back</button>
+      </section>
+
+      <!-- DEFENDER SELECT -->
+      <section id="screen-defender" class="screen">
+        <h2 class="screen-title" id="defender-title">Pick your Defender</h2>
+        <p class="screen-sub" id="defender-sub">Bottom player — protect the castle</p>
+        <div id="defender-grid" class="char-grid"></div>
+        <button type="button" class="btn btn-primary" id="btn-defender-next" disabled data-action="defender-confirm">Begin Duel</button>
+        <button type="button" class="btn btn-ghost" data-action="back-wizard">Back</button>
+      </section>
+
+      <!-- HUD (shown during play) -->
+      <section id="screen-hud" class="screen hud">
+        <div class="hud-top">
+          <div class="hud-pill" id="hud-round">R1</div>
+          <div class="hud-pill" id="hud-score">0 — 0</div>
+          <div class="hud-pill" id="hud-combo">×1</div>
+        </div>
+        <div class="hud-mid">
+          <div class="wall-bar-wrap">
+            <span class="wall-label">CASTLE</span>
+            <div class="wall-bar"><div id="wall-fill" class="wall-fill"></div></div>
+            <span id="wall-hp" class="wall-hp">100</span>
+          </div>
+        </div>
+        <div class="hud-banner" id="hud-banner" hidden></div>
+        <div class="hud-hint" id="hud-hint"></div>
+        <button type="button" class="btn-pause" data-action="pause" aria-label="Pause">❚❚</button>
+      </section>
+
+      <!-- PAUSE -->
+      <section id="screen-pause" class="screen overlay-panel">
+        <h2 class="screen-title">Paused</h2>
+        <div class="btn-col">
+          <button type="button" class="btn btn-primary" data-action="resume">Resume</button>
+          <button type="button" class="btn btn-ghost" data-action="quit-menu">Quit to Menu</button>
+        </div>
+      </section>
+
+      <!-- ROUND / MATCH RESULT -->
+      <section id="screen-result" class="screen overlay-panel">
+        <h2 class="screen-title" id="result-title">Round Over</h2>
+        <p class="result-body" id="result-body"></p>
+        <p class="result-score" id="result-score"></p>
+        <div class="btn-col">
+          <button type="button" class="btn btn-primary" id="btn-result-next" data-action="result-next">Next Round</button>
+          <button type="button" class="btn btn-ghost" data-action="quit-menu">Menu</button>
+        </div>
+      </section>
+
+      <!-- LEADERBOARD -->
+      <section id="screen-leaderboard" class="screen">
+        <h2 class="screen-title">Leaderboards</h2>
+        <div class="tabs">
+          <button type="button" class="tab active" data-board="duel">Duel Wins</button>
+          <button type="button" class="tab" data-board="endless">Endless</button>
+        </div>
+        <ol id="board-list" class="board-list"></ol>
+        <button type="button" class="btn btn-primary" data-action="back-title">Back</button>
+      </section>
+
+      <!-- NAME ENTRY (endless / duel champ) -->
+      <section id="screen-name" class="screen overlay-panel">
+        <h2 class="screen-title">Hall of Fame</h2>
+        <p class="screen-sub" id="name-score-line">New high score!</p>
+        <input id="name-input" class="name-input" type="text" maxlength="12" placeholder="Your name" autocomplete="off" enterkeyhint="done" />
+        <button type="button" class="btn btn-primary" data-action="save-score">Save</button>
+        <button type="button" class="btn btn-ghost" data-action="skip-score">Skip</button>
+      </section>
+    </div>
+
+    <!-- Toast callouts -->
+    <div id="toast" class="toast" hidden></div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/particles.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

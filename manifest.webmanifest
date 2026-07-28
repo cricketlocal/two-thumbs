@@ -1,0 +1,19 @@
+{
+  "name": "Two Thumbs — Wizard Duel",
+  "short_name": "Two Thumbs",
+  "description": "Vertical wizard duel. Swipe spells. Guard the castle. Swap roles.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0618",
+  "theme_color": "#0a0618",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
