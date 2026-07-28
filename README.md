@@ -1,6 +1,6 @@
 # Two Thumbs 🪄🛡️
 
-**Vertical mobile wizard duel** — one phone, two thumbs, zero mercy.
+**Vertical mobile wizard duel** — neon siege skin from the trailer look: magenta frame, hooded caster, glass fireballs, cyan orbit rings, golden castle shield. One phone, two thumbs, zero mercy.
 
 Top player swipes to launch air-hockey spells. Bottom player drags a paddle-shield that **grows +10% on every block** and **shrinks −10% on every miss** while the castle wall chips away. Roles swap each round. Built to go viral on couches, pubs, and sibling rivalries.
 

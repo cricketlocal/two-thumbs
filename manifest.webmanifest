@@ -5,8 +5,8 @@
   "start_url": "./index.html",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0a0618",
-  "theme_color": "#0a0618",
+  "background_color": "#140528",
+  "theme_color": "#140528",
   "categories": ["games", "entertainment"],
   "icons": [
     {

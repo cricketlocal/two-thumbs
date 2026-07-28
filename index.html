@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="theme-color" content="#0a0618" />
-  <meta name="description" content="Two Thumbs — vertical wizard duel. Swipe spells. Guard the castle. Swap roles. Go viral." />
+  <meta name="theme-color" content="#140528" />
+  <meta name="description" content="Two Thumbs — Neon Siege wizard duel. Flick fireballs. Guard the golden castle. Swap roles." />
   <meta name="apple-mobile-web-app-title" content="Two Thumbs" />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="apple-touch-icon" href="assets/icon-512.png" />
@@ -26,20 +26,23 @@
     <!-- Main canvas (gameplay + procedural art) -->
     <canvas id="game" width="390" height="844"></canvas>
 
+    <!-- Trailer neon magenta frame -->
+    <div id="neon-frame" aria-hidden="true"></div>
+
     <!-- DOM overlays for menus (crisp text / accessibility) -->
     <div id="ui" class="ui">
       <!-- TITLE -->
       <section id="screen-title" class="screen active">
         <div class="title-stack">
-          <p class="eyebrow">PASS · PLAY · DUEL</p>
+          <p class="eyebrow">NEON · SIEGE · DUEL</p>
           <h1 class="logo">
             <span class="logo-two">TWO</span>
             <span class="logo-thumbs">THUMBS</span>
           </h1>
-          <p class="tagline">Wizard vs Castle. One phone. Zero mercy.</p>
+          <p class="tagline">Flick the fireball. Guard the golden shield. One phone.</p>
         </div>
         <div class="btn-col">
-          <button type="button" class="btn btn-primary" data-action="play">⚔️ Duel Mode</button>
+          <button type="button" class="btn btn-primary" data-action="play">🔥 Duel Mode</button>
           <button type="button" class="btn btn-accent" data-action="endless">∞ Endless Siege</button>
           <button type="button" class="btn btn-ghost" data-action="tutorial">📖 How to Play</button>
           <button type="button" class="btn btn-ghost" data-action="leaderboard">🏆 Leaderboards</button>
