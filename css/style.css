@@ -372,7 +372,8 @@ body.playing #bg-glow {
   text-align: center;
 }
 
-.btn-pause {
+.btn-pause,
+.btn-mute-hud {
   width: 28px;
   height: 28px;
   border-radius: 8px;
@@ -385,6 +386,39 @@ body.playing #bg-glow {
   flex-shrink: 0;
   padding: 0;
   line-height: 1;
+  pointer-events: auto;
+}
+
+.btn-mute {
+  position: absolute;
+  top: calc(10px + var(--safe-t));
+  right: 12px;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 46, 207, 0.35);
+  background: rgba(12, 4, 28, 0.65);
+  color: var(--ink);
+  font-size: 1.1rem;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  z-index: 6;
+  line-height: 1;
+  pointer-events: auto;
+}
+
+.btn-mute.is-muted,
+.btn-mute-hud.is-muted {
+  opacity: 0.65;
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.btn-mute-hud {
+  font-size: 0.72rem;
+}
+
+body.playing .btn-mute:not(.btn-mute-hud) {
+  display: none;
 }
 
 /* Round countdown — top right edge */

@@ -121,6 +121,8 @@
       this.resize();
       this._bindInput(true);
       this._banner(this.mode === "endless" ? "SIEGE BEGINS" : "ROUND 1 — FIGHT!", 1.4);
+      this._lastTickSec = null;
+      global.TT.SFX.roundStart();
       this._emitHud();
     }
 
@@ -325,7 +327,7 @@
       const haste = this.effects.haste > 0 ? 0.5 : 1;
       this.cd = this.wizard.cooldown * haste;
       global.TT.SFX.swipe();
-      global.TT.SFX.launch();
+      global.TT.SFX.launch(this.wizard.school || this.wizard.special || "fire");
       // Cast flash at wizard only — no direction telegraph
       this.particles.burst(spawnX, spawnY, this.wizard.color, 12, 140, 0.3, 3);
       if (this.hintsLeft > 0) this.hintsLeft--;
@@ -497,10 +499,21 @@
       this._updateGuards(t);
       this.particles.update(dt);
 
-      // Round timer (duel)
-      if (this.mode === "duel" && this.time >= this.roundTime) {
-        this._endRound("timeout");
-        return;
+      // Round timer (duel) + urgent ticks
+      if (this.mode === "duel") {
+        const left = this.roundTime - this.time;
+        if (left > 0 && left <= 10) {
+          const sec = Math.ceil(left);
+          if (sec !== this._lastTickSec) {
+            this._lastTickSec = sec;
+            if (sec <= 5) global.TT.SFX.tickUrgent();
+            else global.TT.SFX.tick();
+          }
+        }
+        if (this.time >= this.roundTime) {
+          this._endRound("timeout");
+          return;
+        }
       }
 
       if (this.wallHp <= 0) {
@@ -660,6 +673,8 @@
         this.particles.burst(s.x, padY, s.color, 12, 130, 0.4, 3);
       }
 
+      if (this.combo >= 2) global.TT.SFX.combo(this.combo);
+
       if (this.combo >= 3 && this.combo % 3 === 0) {
         this.particles.textPop(this.w / 2, this.h * 0.5, `COMBO ×${this.combo}`, "#ff6ad5");
         this._toast(`🔥 COMBO ×${this.combo}`);
@@ -773,10 +788,12 @@
           break;
         case "freeze":
           this.effects.freeze = p.duration;
+          global.TT.SFX.freeze();
           break;
         case "repair":
           this.wallHp = clamp(this.wallHp + 18, 0, global.TT.CFG.WALL_MAX);
           this.particles.textPop(this.w / 2, this.h * 0.9, "+18 WALL", "#5dff9a");
+          global.TT.SFX.repair();
           break;
         case "haste":
           this.effects.haste = p.duration;
@@ -851,6 +868,8 @@
       this._resetRound();
       this.over = false;
       this._banner(this.attackerIsA ? `ROUND ${this.round} — P1 ATTACKS` : `ROUND ${this.round} — P2 ATTACKS`, 1.5);
+      this._lastTickSec = null;
+      global.TT.SFX.roundStart();
       this._emitHud();
     }
 

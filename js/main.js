@@ -121,10 +121,21 @@
     el.style.animation = "none";
     void el.offsetWidth;
     el.style.animation = "";
+    if (TT.SFX && TT.SFX.banner) TT.SFX.banner();
     clearTimeout(banner._t);
     banner._t = setTimeout(() => {
       el.hidden = true;
     }, (t || 1.2) * 1000);
+  }
+
+  function syncMuteBtn() {
+    if (!TT.SFX) return;
+    const m = TT.SFX.isMuted();
+    $$(".btn-mute, .btn-mute-hud, #btn-mute").forEach((btn) => {
+      btn.textContent = m ? "🔇" : "🔊";
+      btn.setAttribute("aria-label", m ? "Unmute" : "Mute");
+      btn.classList.toggle("is-muted", m);
+    });
   }
 
   function formatTime(sec) {
@@ -180,7 +191,7 @@
         <div class="char-desc">${w.desc}</div>
       `;
       card.addEventListener("click", () => {
-        TT.SFX.ui();
+        TT.SFX.select();
         state.wizardId = w.id;
         $$(".char-card", grid).forEach((c) => c.classList.remove("selected"));
         card.classList.add("selected");
@@ -206,7 +217,7 @@
         <div class="char-desc">${d.desc}</div>
       `;
       card.addEventListener("click", () => {
-        TT.SFX.ui();
+        TT.SFX.select();
         state.defenderId = d.id;
         $$(".char-card", grid).forEach((c) => c.classList.remove("selected"));
         card.classList.add("selected");
@@ -369,8 +380,17 @@
 
   // —— Actions ——
   function onAction(action) {
-    TT.SFX.ui();
     TT.SFX.unlock();
+    if (action === "toggle-mute") {
+      TT.SFX.toggleMute();
+      syncMuteBtn();
+      return;
+    }
+    if (action === "back-title" || action === "back-wizard" || action === "quit-menu") {
+      TT.SFX.uiBack();
+    } else {
+      TT.SFX.ui();
+    }
     switch (action) {
       case "play":
         state.mode = "duel";
@@ -546,7 +566,8 @@
             game._spawnSpell(game.w / 2 + 40, game.h * TT.CFG.WIZARD_ZONE * 0.85, Math.PI / 2 + 0.2, 0.9, true);
           }
           game.cd = game.wizard.cooldown;
-          TT.SFX.launch();
+          TT.SFX.swipe();
+          TT.SFX.launch(game.wizard.school || "fire");
         }
       }
     });
@@ -554,6 +575,9 @@
     ensureGame();
     drawIdle();
     startLoop();
+    syncMuteBtn();
+    TT.onMuteChange = () => syncMuteBtn();
+
     // Idle animation: gently move paddle
     setInterval(() => {
       if (game && !game.running && $("#screen-title").classList.contains("active")) {
